@@ -11,8 +11,17 @@ class Value:
         # For print
         return f"Value(data={self.data})"
 
+    def __truediv__(self, other):
+        return self * other ** -1
+    def __neg__(self):
+        return self * -1
+    def __sub__(self, other): # self-other
+        other = other if isinstance(other, Value) else Value(other)
+        return self + (-other)
+
     def __add__(self,other):
         # For addition
+        other = other if isinstance(other, Value) else Value(other)
         out = Value(self.data + other.data, (self,other), '+')
         def _backward():
             # In the case of addition, the addends take on the gradient of their resulting value, as they don't change the gradient of the resulting value.
@@ -21,8 +30,11 @@ class Value:
         out._backward = _backward
         return out
 
+
+
     def __mul__(self,other):
         # For addition
+        other = other if isinstance(other, Value) else Value(other)
         out = Value(self.data * other.data, (self,other), '*')
         def _backward():
             self.grad += other.data * out.grad # chain rule
@@ -30,13 +42,22 @@ class Value:
         out._backward = _backward
         return out
 
-    def pow(self, other):
-        out = Value(self.data ** other.data, (self,other), '**')
+    def __pow__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+        out = Value(self.data ** other.data, (self,other), f'**{other}')
         def _backward():
             self.grad += other.data * (self.data ** (other.data - 1)) * out.grad
             other.grad += (self.data ** other.data) * math.log(self.data) * out.grad
         out._backward = _backward
         return out
+
+    def exp(self):
+        x = self.data
+        out = Value(math.exp(self.data), (self, ), 'exp')
+        def _backward():
+            self.grad += out.data * out.grad # e^a a'
+        out._backward = _backward
+
     def tanh(self):
         x = self.data
         t = (math.exp(2*x)-1)/(math.exp(2*x)+1)
@@ -45,6 +66,16 @@ class Value:
             self.grad += (1-t**2)*out.grad
         out._backward = _backward
         return out
+
+    def __rmul__(self,other): # other * self
+        return self * other
+    def __radd__(self,other): # other + self
+        return self + other
+    def __rsub__(self,other): # other - self
+        return other + (-self)
+    def __rtrudiv__(self,other): # other / self
+        return other * self**-1
+
     def backward(self):
         topo = []
         visited = set()
@@ -58,10 +89,3 @@ class Value:
         # topologically sort nodes: left to right
         for node in reversed(topo):
             node._backward()
-
-
-def intToVal(integer):
-    custom = Value(integer)
-    custom.label = f"{integer}"
-    return custom
-
