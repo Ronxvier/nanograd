@@ -47,7 +47,7 @@ class Value:
         out = Value(self.data ** other.data, (self,other), f'**{other}')
         def _backward():
             self.grad += other.data * (self.data ** (other.data - 1)) * out.grad
-            other.grad += (self.data ** other.data) * math.log(self.data) * out.grad
+            # TODO: should probably compute other grad too
         out._backward = _backward
         return out
 
@@ -57,6 +57,7 @@ class Value:
         def _backward():
             self.grad += out.data * out.grad # e^a a'
         out._backward = _backward
+        return out
 
     def tanh(self):
         x = self.data
@@ -73,7 +74,7 @@ class Value:
         return self + other
     def __rsub__(self,other): # other - self
         return other + (-self)
-    def __rtrudiv__(self,other): # other / self
+    def __rtruediv__(self,other): # other / self
         return other * self**-1
 
     def backward(self):
@@ -86,6 +87,7 @@ class Value:
                     build_topo(child)
                 topo.append(v)
         build_topo(self)
+        self.grad = 1.0
         # topologically sort nodes: left to right
         for node in reversed(topo):
             node._backward()
