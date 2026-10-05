@@ -23,8 +23,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12' 
-        cache: 'pip' # Automatically caches dependencies to speed up future runs
+        python-version: '3.12'
 
     # 3. Install required packages
     - name: Install dependencies
