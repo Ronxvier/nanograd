@@ -102,15 +102,11 @@ class Tensor:
 
     def shape(self):
         arr = self.values
-        shape = []
-        while isinstance(arr, list):
-            shape.append(len(arr))
-            arr = arr[0]
-        return tuple(shape)
+        return np.shape(arr)
 
     def toValue(self):
         def wrap(x):
-            if isinstance(x, list):
+            if isinstance(x, list) or isinstance(x, np.ndarray):
                 return [wrap(el) for el in x]
             elif isinstance(x, Value):
                 return x

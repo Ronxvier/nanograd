@@ -104,4 +104,4 @@ Things I'm planning to work through, roughly in order:
 
 ## Acknowledgements
 
-- Andrej Karpathy's [micrograd](https://github.com/karpathy/micrograd) and the [Neural Networks: Zero to Hero](https://github.com/karpathy/nn-zero-to-hero) lectures, which this project is based on. `draw_graph.py` is adapted from the lecture notebook.
+- Andrej Karpathy's [micrograd](https://github.com/karpathy/micrograd) `draw_graph.py` is directly copied from the lecture notebook.
