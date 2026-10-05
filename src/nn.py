@@ -1,5 +1,5 @@
 import random
-from engine import Value
+from .engine import Value
 class Neuron:
     def __init__(self, nin): # number of inputs
         self.w = [Value(random.uniform(-1,1)) for _ in range(nin)] # creates random weights for each input (size defined at initialization, values defined at call)

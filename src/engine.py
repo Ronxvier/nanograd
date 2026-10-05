@@ -91,3 +91,15 @@ class Value:
         # topologically sort nodes: left to right
         for node in reversed(topo):
             node._backward()
+
+class Tensor:
+    def __init__(self, values):
+        self.values = values
+    def shape(self):
+        arr = self.values
+        shape = []
+        while isinstance(arr, list):
+            shape.append(len(arr))
+            arr = arr[0]
+        return tuple(shape)
+
