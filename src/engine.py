@@ -95,22 +95,33 @@ class Value:
 
 class Tensor:
     def __init__(self, values):
-        self.values = np.array(values)
+        self.values = self._to_values(np.array(values, dtype=object))
+        self.shape = self.values.shape
+
+    def _to_values(self, arr):
+        result = np.empty(arr.shape, dtype=object)
+        for index in np.ndindex(arr.shape):
+            value = arr[index]
+            result[index] = value if isinstance(value, Value) else Value(value)
+        return result
+
 
     def __repr__(self):
         return f"Tensor(values={self.values})"
 
-    def shape(self):
-        arr = self.values
-        return np.shape(arr)
+    def __add__(self, other):
+        # Because we can only add tensors to other tensors, no need for radd, or any other operations of that kind
+        assert self.shape == other.shape, "Invalid dimensions for addition"
+        return Tensor(self.values + other.values)
+    
+    def __sub__(self,other):
+        assert self.shape == other.shape, "Invalid dimensions for subtraction"
+        return Tensor(self.values - other.values)
 
-    def toValue(self):
-        def wrap(x):
-            if isinstance(x, list) or isinstance(x, np.ndarray):
-                return [wrap(el) for el in x]
-            elif isinstance(x, Value):
-                return x
-            else:
-                return Value(x)
-        self.values = wrap(self.values)
+    def __mul__(self, other):
+        assert self.shape == other.shape, "Invalid dimensions for dot-product multiplication"
+        return Tensor(self.values * other.values)
 
+    def __matmul__(self, other):
+        assert self.shape == other.shape, "Invalid dimensions for matrix multiplication"
+        return Tensor(self.values @ other.values)
