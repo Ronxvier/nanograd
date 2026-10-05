@@ -1,4 +1,5 @@
 import math
+import numpy as np
 class Value:
     def __init__(self,data,_children=(), _op='',label=''):
         self.data = data;
@@ -94,7 +95,11 @@ class Value:
 
 class Tensor:
     def __init__(self, values):
-        self.values = values
+        self.values = np.array(values)
+
+    def __repr__(self):
+        return f"Tensor(values={self.values})"
+
     def shape(self):
         arr = self.values
         shape = []
@@ -102,4 +107,14 @@ class Tensor:
             shape.append(len(arr))
             arr = arr[0]
         return tuple(shape)
+
+    def toValue(self):
+        def wrap(x):
+            if isinstance(x, list):
+                return [wrap(el) for el in x]
+            elif isinstance(x, Value):
+                return x
+            else:
+                return Value(x)
+        self.values = wrap(self.values)
 
