@@ -93,6 +93,9 @@ class Value:
         for node in reversed(topo):
             node._backward()
 
+"""
+I'm aware that this implementation of a Tensor is just an abstraction of operations on lists of scalar Value objects, this is just going to be how it is for now, I'll go back for an optimal implementation of the tensor later.
+"""
 class Tensor:
     def __init__(self, values):
         self.values = self._to_values(np.array(values, dtype=object))
@@ -100,9 +103,9 @@ class Tensor:
 
     def _to_values(self, arr):
         result = np.empty(arr.shape, dtype=object)
-        for index in np.ndindex(arr.shape):
-            value = arr[index]
-            result[index] = value if isinstance(value, Value) else Value(value)
+        for i in np.ndindex(arr.shape):
+            value = arr[i]
+            result[i] = value if isinstance(value, Value) else Value(value)
         return result
 
 
@@ -113,7 +116,7 @@ class Tensor:
         # Because we can only add tensors to other tensors, no need for radd, or any other operations of that kind
         assert self.shape == other.shape, "Invalid dimensions for addition"
         return Tensor(self.values + other.values)
-    
+
     def __sub__(self,other):
         assert self.shape == other.shape, "Invalid dimensions for subtraction"
         return Tensor(self.values - other.values)
@@ -123,5 +126,21 @@ class Tensor:
         return Tensor(self.values * other.values)
 
     def __matmul__(self, other):
-        assert self.shape == other.shape, "Invalid dimensions for matrix multiplication"
-        return Tensor(self.values @ other.values)
+        assert self.values.ndim == 2
+        assert other.values.ndim == 2
+        # matmul is a 2d op
+        assert self.shape[1] == other.shape[0], "Invalid dimensions for matrix multiplication"
+        result = np.empty((self.shape[0],other.shape[1]), dtype = object)
+        for i in range(self.shape[0]):
+            for j in range(other.shape[1]):
+                value = Value(0)
+                for k in range(self.shape[1]):
+                    value = value + self.values[i,k] * other.values[k,j]
+                result[i,j] = value
+        return Tensor(result)
+
+    def tanh(self):
+        result  = np.empty(self.shape, dtype=object)
+        for index in np.ndindex(self.shape):
+            result[index] = self.values[index].tanh()
+        return Tensor(result)
