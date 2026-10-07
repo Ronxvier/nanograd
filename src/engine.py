@@ -144,3 +144,12 @@ class Tensor:
         for index in np.ndindex(self.shape):
             result[index] = self.values[index].tanh()
         return Tensor(result)
+
+    def sum(self):
+        result = Value(0)
+        for value in self.values.flat:
+            result += value
+        return result
+
+    def mean(self):
+        return self.sum()/self.values.size
