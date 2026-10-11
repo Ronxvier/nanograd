@@ -27,23 +27,27 @@ class Tensor:
 
     def __mul__(self,other):
         other = other if isinstance(other, Tensor) else Tensor(other)
-        if self.data.shape != other.data.shape:
+        scalar_other = (other.data.ndim ==0)
+        if not scalar_other and self.data.shape != other.data.shape:
             raise ValueError(
                 f"Shape mismatch for multiplication: "
                 f"{self.data.shape} and {other.data.shape}"
             )
-        #TODO: need to implement a method for scalar multiplication (t * 2 type operations), This can just be an exception
         out = Tensor(self.data*other.data,(self,other),'*')
         def _backward():
             self.grad += other.data * out.grad
-            other.grad += self.data * out.grad
+            other_grad = self.data * out.grad
+            if scalar_other:
+                other.grad += np.sum(other_grad)
+            else:
+                other.grad += other_grad
         out._backward = _backward
         return out
 
     def __neg__(self):
         out = Tensor(-self.data,(self,),'neg')
         def _backward():
-            self.out += -other.grad
+            self.grad += -out.grad
         out._backward = _backward
         return out
 
