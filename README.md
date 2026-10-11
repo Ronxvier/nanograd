@@ -1,20 +1,6 @@
 # nanograd
 
-**THIS IS AN AI GENERATED README. It's roughly correct, but I'll go back and write one myself later.**
-
-A small machine learning library built from scratch, mostly to learn how it all works under the hood.
-
-This started as a clone of Andrej Karpathy's [micrograd](https://github.com/karpathy/micrograd): a scalar-valued autograd engine with a tiny neural network library on top. Now I'm growing it into a more complete ML library.
-
-It's mostly an educational project, but it might still be useful for small experiments, or for reading code that's short enough to follow end to end.
-
-## What's here
-
-| Module | What it does |
-| --- | --- |
-| `src/engine.py` | `Value`, a scalar that records the operations applied to it and backpropagates gradients through them. Also an early `Tensor` class (work in progress). |
-| `src/nn.py` | `Neuron`, `Layer` and `MLP`, built entirely out of `Value`s. |
-| `src/draw_graph.py` | Renders a computation graph with Graphviz, showing each node's data and gradient. |
+A "deep learning library from scratch" pet project.
 
 ### Autograd engine
 
@@ -66,42 +52,21 @@ for step in range(1000):
 ```python
 from src.draw_graph import draw_dot
 
-draw_dot(loss)   # writes graph.svg and opens it
+draw_dot(loss)
 ```
 
-This needs the [Graphviz](https://graphviz.org/download/) system package (for example `brew install graphviz`) as well as the Python `graphviz` package.
+This needs the [Graphviz](https://graphviz.org/download/) system package (`brew install graphviz`) and Python `graphviz` package.
 
-## Setup
-
-```bash
-git clone https://github.com/<your-username>/nanograd.git
-cd nanograd
-pip install numpy graphviz pytest
-```
-
-## Running the tests
-
-```bash
-python -m pytest -s
-```
-
-- `tests/test_simplenet.py` trains an MLP on a four-example toy dataset and checks that the loss drops below 0.01.
-- `tests/test_tensors.py` exercises the early `Tensor` class.
-
-## Roadmap
-
-Things I'm planning to work through, roughly in order:
+## TODO
 
 - [x] Scalar autograd engine (`Value`)
 - [x] Neuron / Layer / MLP
 - [x] Computation graph visualization
-- [ ] `Tensor` class backed by NumPy, with autograd over whole arrays
-- [ ] Full Demo with mnist dataset
-- [ ] More activations (ReLU, sigmoid, softmax)
-- [ ] Loss functions (MSE, cross-entropy)
-- [ ] Optimizers (SGD with momentum, Adam)
+- [ ] Implement Tensors w/ autograd - **IN PROGRESS**
+- [ ] Layers, Losses
 - [ ] Training on a real dataset (e.g. MNIST)
+- [ ] Optimizers (SGD with momentum, Adam)
 
 ## Acknowledgements
 
-- Andrej Karpathy's [micrograd](https://github.com/karpathy/micrograd) `draw_graph.py` is directly copied from the lecture notebook.
+- Andrej Karpathy's [micrograd](https://github.com/karpathy/micrograd) and the [Neural Networks: Zero to Hero](https://github.com/karpathy/nn-zero-to-hero) lectures, which this project is based on. `draw_graph.py` is adapted from the lecture notebook.
