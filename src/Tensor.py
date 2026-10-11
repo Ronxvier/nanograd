@@ -54,3 +54,18 @@ class Tensor:
     def __sub__(self, other): # self-other
         other = other if isinstance(other, Tensor) else Tensor(other)
         return self + (-other)
+
+    def __truediv__(self):
+        other = other if isinstance(other, Tensor) else Tensor(other)
+        return self * (other ** -1)
+
+    def __pow__(self, other):
+        ...
+        # TODO: fill this in
+    def exp(self):
+        out = Tensor(np.exp(self.data), (self,), 'exp')
+        def _backward():
+            self.grad += out.data * out.grad
+        out._backward = _backward
+        return out
+
