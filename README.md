@@ -2,6 +2,13 @@
 
 A "deep learning library from scratch" pet project.
 
+
+### TODO: URGENT (Tensors)
+- [ ] Implement Reflective operators (radd etc.)
+- [ ] Write a backward function
+- [ ] Fix +/- scalar exceptions
+- [ ] Fix pow gradients (mask positive elements and apply operations there)
+
 ### Autograd engine
 
 `Value` supports `+`, `-`, `*`, `/`, `**`, `exp()` and `tanh()`, including mixed expressions with plain Python numbers (`2 * x`, `1 - y`, and so on). Calling `.backward()` on an output topologically sorts the graph and applies the chain rule in reverse, storing each node's gradient in `.grad`.

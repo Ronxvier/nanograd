@@ -55,7 +55,7 @@ class Tensor:
         other = other if isinstance(other, Tensor) else Tensor(other)
         return self + (-other)
 
-    def __truediv__(self):
+    def __truediv__(self, other):
         other = other if isinstance(other, Tensor) else Tensor(other)
         return self * (other ** -1)
 
