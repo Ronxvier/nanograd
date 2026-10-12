@@ -94,3 +94,9 @@ class Tensor:
         out._backward = _backward
         return out
 
+    def relu(self):
+        out = Tensor(np.maximum(self.data,0),(self,),'relu')
+        def _backward():
+            self.grad += (self.data > 0) * out.grad
+        out._backward = _backward
+        return out
