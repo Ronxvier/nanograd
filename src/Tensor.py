@@ -13,6 +13,8 @@ class Tensor:
 
     def __add__(self,other):
         other = other if isinstance(other, Tensor) else Tensor(other)
+        if self.data.ndim == 0 and other.data.ndim != 0:
+            return other + self
         scalar_other = other.data.ndim == 0
         if self.data.shape != other.data.shape and not scalar_other:
             raise ValueError(
@@ -32,6 +34,8 @@ class Tensor:
     def __mul__(self,other):
         other = other if isinstance(other, Tensor) else Tensor(other)
         scalar_other = (other.data.ndim ==0)
+        if self.data.ndim == 0 and other.data.ndim != 0:
+            return other * self
         if not scalar_other and self.data.shape != other.data.shape:
             raise ValueError(
                 f"Shape mismatch for multiplication: "
