@@ -1,5 +1,6 @@
 import numpy as np
 import math
+
 class Tensor:
     def __init__(self,data, _children=(), _op='',label=''):
         self.data = np.asarray(data, dtype=np.float64)
@@ -13,42 +14,20 @@ class Tensor:
 
     def __add__(self,other):
         other = other if isinstance(other, Tensor) else Tensor(other)
-        if self.data.ndim == 0 and other.data.ndim != 0:
-            return other + self
-        scalar_other = other.data.ndim == 0
-        if self.data.shape != other.data.shape and not scalar_other:
-            raise ValueError(
-                f"Shape mismatch for addition: "
-                f"{self.data.shape} and {other.data.shape}"
-            )
         out = Tensor(self.data+other.data,(self,other),'+')
         def _backward():
-            self.grads += 1.0 * out.grads
-            if scalar_other:
-                other.grads += np.sum(out.grads)
-            else:
-                other.grads += 1.0 * out.grads
+            self.grads += 1.0 * _unbroadcast(out.grads)
+            other.grads += 1.0 * _unbroadcast(out.grads)
         out._backward = _backward
         return out
 
     def __mul__(self,other):
         other = other if isinstance(other, Tensor) else Tensor(other)
-        scalar_other = (other.data.ndim ==0)
-        if self.data.ndim == 0 and other.data.ndim != 0:
-            return other * self
-        if not scalar_other and self.data.shape != other.data.shape:
-            raise ValueError(
-                f"Shape mismatch for multiplication: "
-                f"{self.data.shape} and {other.data.shape}"
-            )
         out = Tensor(self.data*other.data,(self,other),'*')
         def _backward():
-            self.grads += other.data * out.grads
+            self.grads += _unbroadcast(other.data * out.grads)
             other_grad = self.data * out.grads
-            if scalar_other:
-                other.grads += np.sum(other_grad)
-            else:
-                other.grads += other_grad
+            other.grads += _unbroadcast(self.data*out.grads)
         out._backward = _backward
         return out
 
@@ -69,29 +48,15 @@ class Tensor:
 
     def __pow__(self, other):
         other = other if isinstance(other, Tensor) else Tensor(other)
-
-        scalar_other = other.data.ndim == 0
-        if not scalar_other and self.data.shape != other.data.shape:
-            raise ValueError(
-                f"Shape mismatch for power: "
-                f"{self.data.shape} and {other.data.shape}"
-            )
-
         out = Tensor(self.data ** other.data, (self, other), '**')
-
         def _backward():
-            self.grads += (
+            self.grads += _unbroadcast(
                 other.data * self.data ** (other.data - 1)
             ) * out.grads
-
             # restricted to positive bases
             if np.all(self.data > 0):
                 exponent_grad = out.data * np.log(self.data) * out.grads
-                if scalar_other:
-                    other.grads += np.sum(exponent_grad)
-                else:
-                    other.grads += exponent_grad
-
+                other.grads += _unbroadcast(exponent_grad)
         out._backward = _backward
         return out
 
@@ -117,6 +82,14 @@ class Tensor:
         return other + (-self)
     def __rtruediv__(self,other): # other / self
         return other * self**-1
+
+    def _unbroadcast()
+      while grad.ndim > len(shape):
+          grad = grad.sum(axis=0)
+      for i, n in enumerate(shape):
+          if n == 1 and grad.shape[i] != 1:
+              grad = grad.sum(axis=i, keepdims=True)
+      return grad
 
     def backward(self):
         topo = []
