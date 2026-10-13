@@ -3,7 +3,7 @@ import math
 class Tensor:
     def __init__(self,data, _children=(), _op='',label=''):
         self.data = np.asarray(data, dtype=np.float64)
-        self.grad= np.zeros_like(self.data) # zeros in shape of data
+        self.grads= np.zeros_like(self.data) # zeros in shape of data
         self._prev = set(_children)
         self._op = _op
         self._backward = lambda: None
@@ -13,15 +13,19 @@ class Tensor:
 
     def __add__(self,other):
         other = other if isinstance(other, Tensor) else Tensor(other)
-        if self.data.shape != other.data.shape:
+        scalar_other = other.data.ndim == 0
+        if self.data.shape != other.data.shape and not scalar_other:
             raise ValueError(
                 f"Shape mismatch for addition: "
                 f"{self.data.shape} and {other.data.shape}"
             )
         out = Tensor(self.data+other.data,(self,other),'+')
         def _backward():
-            self.grad += 1.0 * out.grad
-            other.grad += 1.0 * out.grad
+            self.grads += 1.0 * out.grads
+            if scalar_other:
+                other.grads += np.sum(out.grads)
+            else:
+                other.grads += 1.0 * out.grads
         out._backward = _backward
         return out
 
@@ -35,19 +39,19 @@ class Tensor:
             )
         out = Tensor(self.data*other.data,(self,other),'*')
         def _backward():
-            self.grad += other.data * out.grad
-            other_grad = self.data * out.grad
+            self.grads += other.data * out.grads
+            other_grad = self.data * out.grads
             if scalar_other:
-                other.grad += np.sum(other_grad)
+                other.grads += np.sum(other_grad)
             else:
-                other.grad += other_grad
+                other.grads += other_grad
         out._backward = _backward
         return out
 
     def __neg__(self):
         out = Tensor(-self.data,(self,),'neg')
         def _backward():
-            self.grad += -out.grad
+            self.grads += -out.grads
         out._backward = _backward
         return out
 
@@ -72,17 +76,17 @@ class Tensor:
         out = Tensor(self.data ** other.data, (self, other), '**')
 
         def _backward():
-            self.grad += (
+            self.grads += (
                 other.data * self.data ** (other.data - 1)
-            ) * out.grad
+            ) * out.grads
 
             # restricted to positive bases
             if np.all(self.data > 0):
-                exponent_grad = out.data * np.log(self.data) * out.grad
+                exponent_grad = out.data * np.log(self.data) * out.grads
                 if scalar_other:
-                    other.grad += np.sum(exponent_grad)
+                    other.grads += np.sum(exponent_grad)
                 else:
-                    other.grad += exponent_grad
+                    other.grads += exponent_grad
 
         out._backward = _backward
         return out
@@ -90,13 +94,37 @@ class Tensor:
     def exp(self):
         out = Tensor(np.exp(self.data), (self,), 'exp')
         def _backward():
-            self.grad += out.data * out.grad
+            self.grads += out.data * out.grads
         out._backward = _backward
         return out
 
     def relu(self):
         out = Tensor(np.maximum(self.data,0),(self,),'relu')
         def _backward():
-            self.grad += (self.data > 0) * out.grad
+            self.grads += (self.data > 0) * out.grads
         out._backward = _backward
         return out
+
+    def __rmul__(self,other): # other * self
+        return self * other
+    def __radd__(self,other): # other + self
+        return self + other
+    def __rsub__(self,other): # other - self
+        return other + (-self)
+    def __rtruediv__(self,other): # other / self
+        return other * self**-1
+
+    def backward(self):
+        topo = []
+        visited = set()
+        def build_topo(v):
+            if v not in visited:
+                visited.add(v)
+                for child in v._prev:
+                    build_topo(child)
+                topo.append(v)
+        build_topo(self)
+        self.grads = np.ones(self.data.shape)
+        # topologically sort nodes: left to right
+        for node in reversed(topo):
+            node._backward()
