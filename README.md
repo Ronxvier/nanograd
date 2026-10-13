@@ -4,10 +4,11 @@ A "deep learning library from scratch" pet project.
 
 
 ### TODO: URGENT (Tensors)
-- [ ] Implement Reflective operators (radd etc.)
-- [ ] Write a backward function
-- [ ] Fix +/- scalar exceptions
+- [x] Implement Reflective operators (radd etc.)
+- [x] Write a backward function
+- [x] Fix +/- scalar exceptions
 - [ ] Fix pow gradients (mask positive elements and apply operations there)
+- [ ] Train on mnist
 
 ### Autograd engine
 
