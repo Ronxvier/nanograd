@@ -1,6 +1,14 @@
 import numpy as np
 import math
 
+def _unbroadcast(grad, shape):
+  while grad.ndim > len(shape):
+      grad = grad.sum(axis=0)
+  for i, n in enumerate(shape):
+      if n == 1 and grad.shape[i] != 1:
+          grad = grad.sum(axis=i, keepdims=True)
+  return grad
+
 class Tensor:
     def __init__(self,data, _children=(), _op='',label=''):
         self.data = np.asarray(data, dtype=np.float64)
@@ -16,8 +24,8 @@ class Tensor:
         other = other if isinstance(other, Tensor) else Tensor(other)
         out = Tensor(self.data+other.data,(self,other),'+')
         def _backward():
-            self.grads += 1.0 * _unbroadcast(out.grads)
-            other.grads += 1.0 * _unbroadcast(out.grads)
+            self.grads += 1.0 * _unbroadcast(out.grads, self.grads.shape)
+            other.grads += 1.0 * _unbroadcast(out.grads, other.grads.shape)
         out._backward = _backward
         return out
 
@@ -25,9 +33,9 @@ class Tensor:
         other = other if isinstance(other, Tensor) else Tensor(other)
         out = Tensor(self.data*other.data,(self,other),'*')
         def _backward():
-            self.grads += _unbroadcast(other.data * out.grads)
+            self.grads += _unbroadcast(other.data * out.grads, self.grads.shape)
             other_grad = self.data * out.grads
-            other.grads += _unbroadcast(self.data*out.grads)
+            other.grads += _unbroadcast(self.data*out.grads, other.grads.shape)
         out._backward = _backward
         return out
 
@@ -51,12 +59,12 @@ class Tensor:
         out = Tensor(self.data ** other.data, (self, other), '**')
         def _backward():
             self.grads += _unbroadcast(
-                other.data * self.data ** (other.data - 1)
-            ) * out.grads
+                (other.data * self.data ** (other.data - 1)
+            * out.grads), self.grads.shape)
             # restricted to positive bases
             if np.all(self.data > 0):
                 exponent_grad = out.data * np.log(self.data) * out.grads
-                other.grads += _unbroadcast(exponent_grad)
+                other.grads += _unbroadcast(exponent_grad,other.grads.shape)
         out._backward = _backward
         return out
 
@@ -82,14 +90,6 @@ class Tensor:
         return other + (-self)
     def __rtruediv__(self,other): # other / self
         return other * self**-1
-
-    def _unbroadcast()
-      while grad.ndim > len(shape):
-          grad = grad.sum(axis=0)
-      for i, n in enumerate(shape):
-          if n == 1 and grad.shape[i] != 1:
-              grad = grad.sum(axis=i, keepdims=True)
-      return grad
 
     def backward(self):
         topo = []
