@@ -39,6 +39,17 @@ class Tensor:
         out._backward = _backward
         return out
 
+    def __matmul__(self,other):
+        other = other if isinstance(other,Tensor) else Tensor(other)
+        out = Tensor(self.data@other.data, (self,other),'@')
+
+        def _backward():
+            self.grads += out.grads @ other.data.T # other tensor transpose
+            other.grads += self.data.T @ out.grads #self tensor transpose (Got this off definition: TODO: look into this proof)
+        out._backward = _backward
+        return out
+
+
     def __neg__(self):
         out = Tensor(-self.data,(self,),'neg')
         def _backward():
