@@ -116,3 +116,13 @@ class Tensor:
         # topologically sort nodes: left to right
         for node in reversed(topo):
             node._backward()
+
+    def sum(self, axis=None,keepdims=False):
+        out = Tensor(self.data.sum(axis=axis, keepdims=keepdims),(self,),'sum')
+        #TODO: BACKWARD
+        return out
+    def mean(self, axis, keepdims=False):
+        out = Tensor(self.data.sum(axis=axis, keepdims=keepdims), (self,), 'mean')
+        n = self.data.size / out.data.size
+        return out*(1.0/n)
+
