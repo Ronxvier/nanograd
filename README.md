@@ -10,7 +10,7 @@ A "deep learning library from scratch" pet project.
 - [ ] Train on mnist
 
 ### Todo: Bugs for Later
-1. The ** exponent gradient is all-or-nothing when any base is ≤ 0. This is the per-element mask fix on your TODO.
+1. The ** exponent gradient is all-or-nothing when any base is ≤ 0.
 2. x ** 0 at x == 0 gives a nan gradient.
 3. matmul backward breaks with a 1-D operand.
 4. ndarray * Tensor returns a NumPy array instead of a Tensor.
