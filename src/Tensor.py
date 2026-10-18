@@ -119,10 +119,18 @@ class Tensor:
 
     def sum(self, axis=None,keepdims=False):
         out = Tensor(self.data.sum(axis=axis, keepdims=keepdims),(self,),'sum')
-        #TODO: BACKWARD
+        # TODO: CHECK AND VERIFY
+        def _backward():
+            grad = out.grads
+            if axis is not None and not keepdims:
+                grad = np.expand_dims(grad, axis)
+            self.grads += np.broadcast_to(grad, self.grads.shape)
+        out._backward = _backward
         return out
-    def mean(self, axis, keepdims=False):
-        out = Tensor(self.data.sum(axis=axis, keepdims=keepdims), (self,), 'mean')
+
+
+    def mean(self, axis=None, keepdims=False):
+        out = self.sum(axis=axis,keepdims=keepdims)
         n = self.data.size / out.data.size
         return out*(1.0/n)
 
