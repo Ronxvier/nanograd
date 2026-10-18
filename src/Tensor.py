@@ -134,3 +134,10 @@ class Tensor:
         n = self.data.size / out.data.size
         return out*(1.0/n)
 
+    def tanh(self):
+        ts = np.tanh(self.data)
+        out = Tensor(ts,(self, ), 'tanh')
+        def _backward():
+            self.grads += (1-ts**2)*out.grads
+        out._backward = _backward
+        return out
