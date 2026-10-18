@@ -7,8 +7,15 @@ A "deep learning library from scratch" pet project.
 - [x] Implement Reflective operators (radd etc.)
 - [x] Write a backward function
 - [x] Fix +/- scalar exceptions
-- [ ] Fix pow gradients (mask positive elements and apply operations there)
 - [ ] Train on mnist
+
+### Todo: Bugs for Later
+1. The ** exponent gradient is all-or-nothing when any base is ≤ 0. This is the per-element mask fix on your TODO.
+2. x ** 0 at x == 0 gives a nan gradient.
+3. matmul backward breaks with a 1-D operand.
+4. ndarray * Tensor returns a NumPy array instead of a Tensor.
+5. ndarray @ Tensor raises an error, because there's no __rmatmul__.
+6. A Tensor shares memory with the array it was created from.
 
 ### Autograd engine
 
@@ -64,16 +71,6 @@ draw_dot(loss)
 ```
 
 This needs the [Graphviz](https://graphviz.org/download/) system package (`brew install graphviz`) and Python `graphviz` package.
-
-## TODO
-
-- [x] Scalar autograd engine (`Value`)
-- [x] Neuron / Layer / MLP
-- [x] Computation graph visualization
-- [ ] Implement Tensors w/ autograd - **IN PROGRESS**
-- [ ] Layers, Losses
-- [ ] Training on a real dataset (e.g. MNIST)
-- [ ] Optimizers (SGD with momentum, Adam)
 
 ## Acknowledgements
 
