@@ -4,7 +4,7 @@ from .Tensor import Tensor
 
 class Layer:
     def __init__(self, nin, nout):
-        weights = [random.uniform(-1,1) for _ in range(nin)] # todo: validate
+        weights = [np.random.uniform(-1,1,(nin,nout)) for _ in range(nin)] # todo: validate
         self.w = Tensor(weights )
         self.b = Tensor(np.zeros(nout))
     def __call__(self,x):
